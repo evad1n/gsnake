@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -27,12 +28,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Create board and snake
-	b := NewBoard(s, tcell.ColorRed)
-	player := NewSnake(*b)
+	game := NewGame(s)
+
+	go func() {
+		for {
+			time.Sleep(time.Second / 2)
+
+			game.Update()
+		}
+	}()
 
 	for {
 		s.Clear()
+
+		player.Move()
 
 		b.Draw(s)
 		player.Draw(s)
@@ -56,15 +65,21 @@ func main() {
 			}
 			switch {
 			case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
-				player.Move(Up)
+				player.Turn(Up)
 			case ev.Key() == tcell.KeyRight || ev.Rune() == 'd':
-				player.Move(Right)
+				player.Turn(Right)
 			case ev.Key() == tcell.KeyDown || ev.Rune() == 's':
-				player.Move(Down)
+				player.Turn(Down)
 			case ev.Key() == tcell.KeyLeft || ev.Rune() == 'a':
-				player.Move(Left)
+				player.Turn(Left)
 			}
 		}
+	}
+}
+
+func gameLoop() {
+	for {
+		time.Sleep()
 	}
 }
 

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -10,6 +8,10 @@ type (
 	Snake struct {
 		length int
 		head   *Cell
+		dir    int
+
+		// Can potentially be digesting multiple things if we are real long
+		growPositions []Point
 	}
 
 	Cell struct {
@@ -24,7 +26,7 @@ const (
 	Down
 	Left
 
-	startLength = 4
+	startLength = 6
 )
 
 func NewSnake(b Board) *Snake {
@@ -45,28 +47,86 @@ func NewSnake(b Board) *Snake {
 			},
 		}
 		prev.next = c
-		fmt.Println(c)
 	}
 
 	return s
 }
 
-// TODO: diff chars for directions
-func (s Snake) Draw(screen tcell.Screen) {
-	for c := s.head; c != nil; c = c.next {
-		screen.SetContent(c.x, c.y, 'X', nil, tcell.StyleDefault.Foreground(tcell.ColorGreen).Background(tcell.ColorGreen))
+// Super cool animation right
+func (s *Snake) Grow(pos Point) {
+	s.length++
+	var c *Cell
+	// Skip to tail
+	for c = s.head; c != nil; c = c.next {
+	}
+	c.next = &Cell{
+		Point: Point{
+			x: c.x,
+			y: c.y,
+		},
 	}
 }
 
-func (s *Snake) Move(direction int) {
+// TODO: diff chars for directions
+func (s Snake) Draw(screen tcell.Screen) {
+	var prev *Cell
+	for c := s.head; c != nil; c = c.next {
+		c.Draw(screen, prev)
+		prev = c
+	}
+}
+
+// Replace positions
+func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
+	char := '='
+	switch {
+	// Head
+	case prev == nil:
+		switch {
+		case c.next.x < c.x:
+			char = '>'
+		case c.next.x > c.x:
+			char = '>'
+		case c.next.y < c.y:
+			char = 'v'
+		case c.next.y > c.y:
+			char = '^'
+		}
+	// Tail
+	case c.next == nil:
+		switch {
+		case prev.x < c.x:
+			char = '>'
+		case prev.x > c.x:
+			char = '<'
+		case prev.y < c.y:
+			char = 'v'
+		case prev.y > c.y:
+			char = '^'
+		}
+	}
+
+	// ╔
+	// ╚
+	// ╗
+	// ╝
+
+	screen.SetContent(c.x, c.y, char, nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
+}
+
+func (s *Snake) Turn(direction int) {
+	s.dir = direction
+}
+
+func (s *Snake) Move() {
 	s.head.Move()
-	switch direction {
+	switch s.dir {
 	case Up:
-		s.head.y++
+		s.head.y--
 	case Right:
 		s.head.x++
 	case Down:
-		s.head.y--
+		s.head.y++
 	case Left:
 		s.head.x--
 	}

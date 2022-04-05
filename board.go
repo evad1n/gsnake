@@ -29,8 +29,8 @@ func NewBoard(screen tcell.Screen, color tcell.Color) *Board {
 	w, h := screen.Size()
 
 	return &Board{
-		width:  w,
-		height: h,
+		width:  w - padding*2,
+		height: h - padding*2,
 		Point:  Point{padding, padding},
 		style:  tcell.StyleDefault.Foreground(color),
 	}
@@ -42,7 +42,7 @@ func (b *Board) Draw(screen tcell.Screen) {
 		screen.SetContent(col, b.y, tcell.RuneHLine, nil, b.style)
 		screen.SetContent(col, b.y+b.height, tcell.RuneHLine, nil, b.style)
 	}
-	for row := b.y; row < b.height; row++ {
+	for row := b.y + 1; row <= b.height+1; row++ {
 		screen.SetContent(b.x, row, tcell.RuneVLine, nil, b.style)
 		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
 	}
