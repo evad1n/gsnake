@@ -23,7 +23,10 @@ type (
 	}
 )
 
-const padding = 2
+const (
+	padding   int  = 2
+	fruitRune rune = 'X'
+)
 
 func NewBoard(screen tcell.Screen, color tcell.Color) *Board {
 	w, h := screen.Size()
@@ -46,6 +49,9 @@ func (b *Board) Draw(screen tcell.Screen) {
 		screen.SetContent(b.x, row, tcell.RuneVLine, nil, b.style)
 		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
 	}
+
+	// Draw fruit
+	screen.SetContent(b.fruit.x, b.fruit.y, fruitRune, nil, tcell.StyleDefault.Foreground(tcell.ColorRed))
 }
 
 func (b *Board) NewFruit() {
@@ -60,4 +66,8 @@ func (b *Board) Midpoint() Point {
 		x: b.x + (b.width / 2),
 		y: b.y + (b.height / 2),
 	}
+}
+
+func (p Point) Collides(other Point) bool {
+	return p.x == other.x && p.y == other.y
 }

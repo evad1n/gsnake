@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -30,24 +29,10 @@ func main() {
 
 	game := NewGame(s)
 
-	go func() {
-		for {
-			time.Sleep(time.Second / 2)
+	go game.Start()
 
-			game.Update()
-		}
-	}()
-
+	// Event listener
 	for {
-		s.Clear()
-
-		player.Move()
-
-		b.Draw(s)
-		player.Draw(s)
-
-		s.Show()
-
 		// Poll event
 		ev := s.PollEvent()
 
@@ -63,23 +48,8 @@ func main() {
 			} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
 				s.Clear()
 			}
-			switch {
-			case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
-				player.Turn(Up)
-			case ev.Key() == tcell.KeyRight || ev.Rune() == 'd':
-				player.Turn(Right)
-			case ev.Key() == tcell.KeyDown || ev.Rune() == 's':
-				player.Turn(Down)
-			case ev.Key() == tcell.KeyLeft || ev.Rune() == 'a':
-				player.Turn(Left)
-			}
+			game.Event(ev)
 		}
-	}
-}
-
-func gameLoop() {
-	for {
-		time.Sleep()
 	}
 }
 

@@ -47,6 +47,7 @@ func NewSnake(b Board) *Snake {
 			},
 		}
 		prev.next = c
+		prev = c
 	}
 
 	return s
@@ -54,20 +55,19 @@ func NewSnake(b Board) *Snake {
 
 // Super cool animation right
 func (s *Snake) Grow(pos Point) {
-	s.length++
-	var c *Cell
-	// Skip to tail
-	for c = s.head; c != nil; c = c.next {
-	}
-	c.next = &Cell{
-		Point: Point{
-			x: c.x,
-			y: c.y,
-		},
-	}
+	// s.length++
+	// var c *Cell
+	// // Skip to tail
+	// for c = s.head; c != nil; c = c.next {
+	// }
+	// c.next = &Cell{
+	// 	Point: Point{
+	// 		x: c.x,
+	// 		y: c.y,
+	// 	},
+	// }
 }
 
-// TODO: diff chars for directions
 func (s Snake) Draw(screen tcell.Screen) {
 	var prev *Cell
 	for c := s.head; c != nil; c = c.next {
@@ -78,7 +78,7 @@ func (s Snake) Draw(screen tcell.Screen) {
 
 // Replace positions
 func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
-	char := '='
+	char := 'o'
 	switch {
 	// Head
 	case prev == nil:
@@ -86,7 +86,7 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
 		case c.next.x < c.x:
 			char = '>'
 		case c.next.x > c.x:
-			char = '>'
+			char = '<'
 		case c.next.y < c.y:
 			char = 'v'
 		case c.next.y > c.y:
@@ -115,6 +115,15 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
 }
 
 func (s *Snake) Turn(direction int) {
+	// Only turn 90 degress max
+	diff := s.dir - direction
+	if diff < 0 {
+		diff = -diff
+	}
+	// 180
+	if diff == 2 {
+		return
+	}
 	s.dir = direction
 }
 
@@ -132,10 +141,20 @@ func (s *Snake) Move() {
 	}
 }
 
-// Replace positions
+// Replace positions and move up
 func (c *Cell) Move() {
 	if c.next != nil {
-		c.next.Point = c.Point
 		c.next.Move()
+		c.next.Point = c.Point
 	}
+}
+
+// Will check for every possible cell collision
+func (s *Snake) Collides(p Point) bool {
+	for c := s.head; c != nil; c = c.next {
+		if c.Point.Collides(p) {
+			return true
+		}
+	}
+	return false
 }
