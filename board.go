@@ -43,7 +43,7 @@ func NewBoard(screen tcell.Screen, color tcell.Color) *Board {
 
 func (b *Board) Draw(screen tcell.Screen) {
 	// TL debug
-	screen.SetContent(b.x, b.y, 'O', nil, b.style.Background(tcell.ColorDarkOliveGreen))
+	// screen.SetContent(b.x, b.y, 'O', nil, b.style.Background(tcell.ColorDarkOliveGreen))
 	// V
 	for row := b.y; row <= b.y+b.height; row++ {
 		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
@@ -77,5 +77,29 @@ func (b *Board) Midpoint() Point {
 }
 
 func (p Point) Collides(other Point) bool {
+	return p.x == other.x && p.y == other.y
+}
+
+// -1 if no diff
+func (p Point) DirTo(other Point) int {
+	y := p.y - other.y
+	x := p.x - other.x
+
+	switch {
+	case y == -1:
+		return Down
+	case y == 1:
+		return Up
+	case x == -1:
+		return Right
+	case x == 1:
+		return Left
+
+	default:
+		return -1
+	}
+}
+
+func (p Point) Equals(other Point) bool {
 	return p.x == other.x && p.y == other.y
 }

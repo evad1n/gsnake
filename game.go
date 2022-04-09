@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -15,6 +16,7 @@ type (
 		events chan GameEvent
 		opts   GameOpts
 
+		score  int
 		over   bool
 		paused bool
 	}
@@ -87,14 +89,15 @@ func (g *Game) Update() {
 	g.snake.Move()
 
 	// Wall collision
-
 	// Self collision
-	if g.snake.CollideSelf() {
+	if g.CollidesWall() || g.snake.CollideSelf() {
 		g.over = true
+
 	}
 
 	// Fruit collision
 	if g.board.fruit.Collides(g.snake.head.Point) {
+		g.score++
 		g.snake.Grow(g.board.fruit)
 
 		g.NewFruit()
@@ -112,6 +115,9 @@ func (g *Game) NewFruit() {
 func (g *Game) Draw() {
 	g.board.Draw(g.screen)
 	g.snake.Draw(g.screen)
+
+	// Score
+	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
 }
 
 func (g *Game) Over() bool {
@@ -120,4 +126,13 @@ func (g *Game) Over() bool {
 
 func (g *Game) TogglePause() {
 	g.paused = !g.paused
+}
+
+func (g *Game) CollidesWall() bool {
+	p := g.snake.head
+
+	return p.x < g.board.x ||
+		p.x >= g.board.x+g.board.width ||
+		p.y < g.board.y ||
+		p.y >= g.board.y+g.board.height
 }

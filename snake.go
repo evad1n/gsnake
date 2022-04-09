@@ -42,7 +42,7 @@ func NewSnake(b Board) *Snake {
 	}
 	prev := s.head
 
-	for i := s.length; i > 0; i-- {
+	for i := s.length - 1; i > 0; i-- {
 		c := &Cell{
 			Point: Point{
 				x: prev.x,
@@ -56,32 +56,33 @@ func NewSnake(b Board) *Snake {
 	return s
 }
 
-// Super cool animation right
+// Pending growth to make it look cooler
 func (s *Snake) Grow(pos Point) {
-	// s.length++
-	// var c *Cell
-	// // Skip to tail
-	// for c = s.head; c != nil; c = c.next {
-	// }
-	// c.next = &Cell{
-	// 	Point: Point{
-	// 		x: c.x,
-	// 		y: c.y,
-	// 	},
-	// }
+	s.growPositions = append(s.growPositions, pos)
 }
 
 func (s Snake) Draw(screen tcell.Screen) {
 	var prev *Cell
 	for c := s.head; c != nil; c = c.next {
-		c.Draw(screen, prev)
+		c.Draw(screen, prev, s.CellIsGrowthPosition(c))
 		prev = c
 	}
 }
 
+func (s *Snake) CellIsGrowthPosition(c *Cell) bool {
+	for _, p := range s.growPositions {
+		if p.Equals(c.Point) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Replace positions
-func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
+func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 	char := 'o'
+
 	switch {
 	// Head
 	case prev == nil:
@@ -99,13 +100,43 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
 	case c.next == nil:
 		switch {
 		case prev.x < c.x:
-			char = '>'
+			char = '-'
 		case prev.x > c.x:
-			char = '<'
+			char = '-'
 		case prev.y < c.y:
-			char = 'v'
+			char = '|'
 		case prev.y > c.y:
-			char = '^'
+			char = '|'
+		}
+	case isGrow:
+		char = 'O'
+	default:
+		dirToPrev := c.Point.DirTo(prev.Point)
+		dirToNext := c.Point.DirTo(c.next.Point)
+
+		switch {
+		case (dirToPrev == Up || dirToPrev == Down) &&
+			(dirToNext == Up || dirToNext == Down):
+			char = '|'
+		case (dirToPrev == Left || dirToPrev == Right) &&
+			(dirToNext == Left || dirToNext == Right):
+			char = '-'
+		case dirToPrev == Left && dirToNext == Up ||
+			dirToPrev == Up && dirToNext == Left:
+			char = '┘'
+			// char = '╝'
+		case dirToPrev == Right && dirToNext == Up ||
+			dirToPrev == Up && dirToNext == Right:
+			// char = '╚'
+			char = '└'
+		case dirToPrev == Left && dirToNext == Down ||
+			dirToPrev == Down && dirToNext == Left:
+			// char = '╗'
+			char = '┐'
+		case dirToPrev == Right && dirToNext == Down ||
+			dirToPrev == Down && dirToNext == Right:
+			// char = '╔'
+			char = '┌'
 		}
 	}
 
@@ -113,6 +144,9 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell) {
 	// ╚
 	// ╗
 	// ╝
+
+	// ‖
+	// ═
 
 	screen.SetContent(c.x, c.y, char, nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
 }
@@ -131,6 +165,9 @@ func (s *Snake) Turn(direction int) {
 }
 
 func (s *Snake) Move() {
+	// Add pending growth
+	s.UpdateGrowth()
+
 	s.dir = s.pendingTurn
 	s.head.Move()
 	switch s.dir {
@@ -142,6 +179,32 @@ func (s *Snake) Move() {
 		s.head.y++
 	case Left:
 		s.head.x--
+	}
+}
+
+func (s *Snake) Tail() *Cell {
+	c := s.head
+	for {
+		if c.next == nil {
+			return c
+		}
+		c = c.next
+	}
+}
+
+func (s *Snake) UpdateGrowth() {
+	tail := s.Tail()
+
+	for i, p := range s.growPositions {
+		if tail.Equals(p) {
+			s.length++
+			tail.next = &Cell{
+				Point: p,
+			}
+
+			// Remove from grow positions
+			s.growPositions = append(s.growPositions[:i], s.growPositions[i+1:]...)
+		}
 	}
 }
 
