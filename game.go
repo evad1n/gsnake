@@ -36,11 +36,9 @@ const baseSpeed float64 = 1.0
 func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 	// Create board and snake
 	b := NewBoard(screen, tcell.ColorRed)
-	snake := NewSnake(*b)
 
 	g := &Game{
 		board:  b,
-		snake:  snake,
 		screen: screen,
 		opts:   opts,
 	}
@@ -49,7 +47,7 @@ func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 }
 
 func (g *Game) Start() {
-	g.NewFruit()
+	g.Restart()
 
 	for {
 		if !g.over && !g.paused {
@@ -72,6 +70,12 @@ func (g *Game) Tick() {
 
 func (g *Game) Event(ev *tcell.EventKey) {
 	switch {
+	case ev.Rune() == 'r':
+		g.Restart()
+	case ev.Rune() == ' ':
+		if g.over {
+			g.Restart()
+		}
 	case ev.Rune() == 'p':
 		g.TogglePause()
 	case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
@@ -113,11 +117,19 @@ func (g *Game) NewFruit() {
 }
 
 func (g *Game) Draw() {
-	g.board.Draw(g.screen)
 	g.snake.Draw(g.screen)
+	g.board.Draw(g.screen)
 
 	// Score
 	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
+}
+
+func (g *Game) Restart() {
+	g.snake = NewSnake(*g.board)
+	g.score = 0
+
+	g.NewFruit()
+	g.over = false
 }
 
 func (g *Game) Over() bool {
