@@ -29,25 +29,33 @@ const (
 )
 
 func NewBoard(screen tcell.Screen, color tcell.Color) *Board {
-	w, h := screen.Size()
+	// w, h := screen.Size()
 
 	return &Board{
-		width:  w - padding*2,
-		height: h - padding*2,
-		Point:  Point{padding, padding},
-		style:  tcell.StyleDefault.Foreground(color),
+		width:  20,
+		height: 10,
+		// width:  w - padding*2,
+		// height: h - padding*2,
+		Point: Point{padding, padding},
+		style: tcell.StyleDefault.Foreground(color),
 	}
 }
 
 func (b *Board) Draw(screen tcell.Screen) {
-	// Draw borders
-	for col := b.x; col <= b.width; col++ {
-		screen.SetContent(col, b.y, tcell.RuneHLine, nil, b.style)
-		screen.SetContent(col, b.y+b.height, tcell.RuneHLine, nil, b.style)
-	}
-	for row := b.y + 1; row <= b.height+1; row++ {
-		screen.SetContent(b.x, row, tcell.RuneVLine, nil, b.style)
+	// TL debug
+	screen.SetContent(b.x, b.y, 'O', nil, b.style.Background(tcell.ColorDarkOliveGreen))
+	// V
+	for row := b.y; row <= b.y+b.height; row++ {
+		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
 		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
+	}
+	// Top
+	for col := b.x - 1; col < b.x+b.width+1; col++ {
+		screen.SetContent(col, b.y-1, '_', nil, b.style)
+	}
+	// Bottom
+	for col := b.x; col < b.x+b.width; col++ {
+		screen.SetContent(col, b.y+b.height, '_', nil, b.style)
 	}
 
 	// Draw fruit
@@ -58,7 +66,7 @@ func (b *Board) NewFruit() {
 	x := rand.Intn(b.width)
 	y := rand.Intn(b.height)
 
-	b.fruit = Point{x, y}
+	b.fruit = Point{b.x + x, b.y + y}
 }
 
 func (b *Board) Midpoint() Point {

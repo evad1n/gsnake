@@ -10,6 +10,9 @@ type (
 		head   *Cell
 		dir    int
 
+		// Otherwise you can turn 180 with multiple inputs per tick
+		pendingTurn int
+
 		// Can potentially be digesting multiple things if we are real long
 		growPositions []Point
 	}
@@ -43,7 +46,7 @@ func NewSnake(b Board) *Snake {
 		c := &Cell{
 			Point: Point{
 				x: prev.x,
-				y: prev.y - 1,
+				y: prev.y + 1,
 			},
 		}
 		prev.next = c
@@ -124,10 +127,11 @@ func (s *Snake) Turn(direction int) {
 	if diff == 2 {
 		return
 	}
-	s.dir = direction
+	s.pendingTurn = direction
 }
 
 func (s *Snake) Move() {
+	s.dir = s.pendingTurn
 	s.head.Move()
 	switch s.dir {
 	case Up:
@@ -156,5 +160,16 @@ func (s *Snake) Collides(p Point) bool {
 			return true
 		}
 	}
+	return false
+}
+
+// Just check if the head is colliding
+func (s *Snake) CollideSelf() bool {
+	for c := s.head.next; c != nil; c = c.next {
+		if c.Point.Collides(s.head.Point) {
+			return true
+		}
+	}
+
 	return false
 }
