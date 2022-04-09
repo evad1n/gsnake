@@ -32,13 +32,13 @@ const (
 	startLength = 6
 )
 
-func NewSnake(b Board) *Snake {
+func NewSnake(start Point) *Snake {
 	s := &Snake{
 		length: startLength,
 	}
 
 	s.head = &Cell{
-		Point: b.Midpoint(),
+		Point: start,
 	}
 	prev := s.head
 

@@ -11,10 +11,12 @@ type (
 	Game struct {
 		screen tcell.Screen
 		board  *Board
-		snake  *Snake
+		snakes []*Snake
 
 		events chan GameEvent
 		opts   GameOpts
+
+		speed float64
 
 		score  int
 		over   bool
@@ -35,12 +37,16 @@ const baseSpeed float64 = 1.0
 
 func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 	// Create board and snake
-	b := NewBoard(screen, tcell.ColorRed)
+	b := NewBoard(screen, opts.MaxBoardSize)
+
+	// Calc speed based on board size
+	speed := baseSpeed * float64(b.width) / 20.0
 
 	g := &Game{
 		board:  b,
 		screen: screen,
 		opts:   opts,
+		speed:  speed,
 	}
 
 	return g
@@ -51,8 +57,17 @@ func (g *Game) Start() {
 
 	for {
 		if !g.over && !g.paused {
-			x := baseSpeed / g.opts.SpeedMultiplier
-			mils := time.Duration(time.Millisecond * time.Duration(100.0*x))
+			s := g.speed * g.opts.SpeedMultiplier
+			// Faster based on snake length
+			s *= 1.0 + (float64(g.snakes[0].length) / 100.0)
+			s *= 100.0
+
+			x := s
+			fmt.Println(x)
+
+			s = 10000.0 / s
+
+			mils := time.Duration(time.Millisecond * time.Duration(s))
 			time.Sleep(mils)
 			g.Tick()
 		}
@@ -79,45 +94,73 @@ func (g *Game) Event(ev *tcell.EventKey) {
 	case ev.Rune() == 'p':
 		g.TogglePause()
 	case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
-		g.snake.Turn(Up)
+		g.TurnSnakes(Up)
 	case ev.Key() == tcell.KeyRight || ev.Rune() == 'd':
-		g.snake.Turn(Right)
+		g.TurnSnakes(Right)
 	case ev.Key() == tcell.KeyDown || ev.Rune() == 's':
-		g.snake.Turn(Down)
+		g.TurnSnakes(Down)
 	case ev.Key() == tcell.KeyLeft || ev.Rune() == 'a':
-		g.snake.Turn(Left)
+		g.TurnSnakes(Left)
+	}
+}
+
+func (g *Game) TurnSnakes(dir int) {
+	for _, s := range g.snakes {
+		s.Turn(dir)
 	}
 }
 
 func (g *Game) Update() {
-	g.snake.Move()
+	for _, s := range g.snakes {
+		s.Move()
+	}
 
 	// Wall collision
-	// Self collision
-	if g.CollidesWall() || g.snake.CollideSelf() {
+	if g.CollidesWall() {
 		g.over = true
-
+		return
+	}
+	// Self collision
+	for _, s := range g.snakes {
+		if s.CollideSelf() {
+			g.over = true
+			return
+		}
 	}
 
 	// Fruit collision
-	if g.board.fruit.Collides(g.snake.head.Point) {
-		g.score++
-		g.snake.Grow(g.board.fruit)
+	for _, s := range g.snakes {
+		if g.board.fruit.Collides(s.head.Point) {
+			g.score++
+			s.Grow(g.board.fruit)
 
-		g.NewFruit()
+			g.NewFruit()
+			break
+		}
 	}
+}
+
+func (g *Game) SnakesCollideWithPoint(p Point) bool {
+	for _, s := range g.snakes {
+		if s.Collides(p) {
+			return true
+		}
+	}
+	return false
 }
 
 // Don't overlap with snake current positions
 func (g *Game) NewFruit() {
 	g.board.NewFruit()
-	for g.snake.Collides(g.board.fruit) {
+	for g.SnakesCollideWithPoint(g.board.fruit) {
 		g.board.NewFruit()
 	}
 }
 
 func (g *Game) Draw() {
-	g.snake.Draw(g.screen)
+	for _, s := range g.snakes {
+		s.Draw(g.screen)
+	}
 	g.board.Draw(g.screen)
 
 	// Score
@@ -125,7 +168,10 @@ func (g *Game) Draw() {
 }
 
 func (g *Game) Restart() {
-	g.snake = NewSnake(*g.board)
+	g.snakes = []*Snake{
+		NewSnake(g.board.Midpoint()),
+		NewSnake(Point{10, 10}),
+	}
 	g.score = 0
 
 	g.NewFruit()
@@ -141,10 +187,16 @@ func (g *Game) TogglePause() {
 }
 
 func (g *Game) CollidesWall() bool {
-	p := g.snake.head
+	for _, s := range g.snakes {
+		p := s.head
 
-	return p.x < g.board.x ||
-		p.x >= g.board.x+g.board.width ||
-		p.y < g.board.y ||
-		p.y >= g.board.y+g.board.height
+		if p.x < g.board.x ||
+			p.x >= g.board.x+g.board.width ||
+			p.y < g.board.y ||
+			p.y >= g.board.y+g.board.height {
+			return true
+		}
+	}
+
+	return false
 }

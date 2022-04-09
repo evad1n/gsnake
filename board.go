@@ -28,16 +28,24 @@ const (
 	fruitRune rune = 'X'
 )
 
-func NewBoard(screen tcell.Screen, color tcell.Color) *Board {
-	// w, h := screen.Size()
+func NewBoard(screen tcell.Screen, maxSize int) *Board {
+	w, h := screen.Size()
+
+	if h > maxSize {
+		h = maxSize
+	}
+
+	// height > width
+	idealWidth := h * 2
+	if idealWidth > w {
+		idealWidth = w
+	}
 
 	return &Board{
-		width:  20,
-		height: 10,
-		// width:  w - padding*2,
-		// height: h - padding*2,
-		Point: Point{padding, padding},
-		style: tcell.StyleDefault.Foreground(color),
+		width:  idealWidth - padding*2,
+		height: h - padding*2,
+		Point:  Point{padding, padding},
+		style:  tcell.StyleDefault,
 	}
 }
 
