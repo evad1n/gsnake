@@ -62,9 +62,6 @@ func (g *Game) Start() {
 			s *= 1.0 + (float64(g.snakes[0].length) / 100.0)
 			s *= 100.0
 
-			x := s
-			fmt.Println(x)
-
 			s = 10000.0 / s
 
 			mils := time.Duration(time.Millisecond * time.Duration(s))
@@ -165,12 +162,15 @@ func (g *Game) Draw() {
 
 	// Score
 	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
+
+	if g.over {
+		g.drawGameOverText()
+	}
 }
 
 func (g *Game) Restart() {
 	g.snakes = []*Snake{
 		NewSnake(g.board.Midpoint()),
-		NewSnake(Point{10, 10}),
 	}
 	g.score = 0
 
@@ -199,4 +199,33 @@ func (g *Game) CollidesWall() bool {
 	}
 
 	return false
+}
+
+const (
+	gameOverLen     = len("GAME OVER")
+	gameOverOffsetY = 0
+	continueLen     = len("PRESS SPACE TO CONTINUE")
+	continueOffsetY = 5
+)
+
+func (g *Game) drawGameOverText() {
+	drawText(
+		g.screen,
+		g.board.width/2-gameOverLen/2,
+		g.board.height/2+gameOverOffsetY,
+		gameOverLen,
+		g.board.height/2+gameOverOffsetY+1,
+		tcell.StyleDefault,
+		"GAME OVER",
+	)
+
+	drawText(
+		g.screen,
+		g.board.width/2-continueLen/2,
+		g.board.height/2+continueOffsetY,
+		continueLen,
+		g.board.height/2+continueOffsetY+1,
+		tcell.StyleDefault,
+		"PRESS SPACE TO CONTINUE",
+	)
 }
