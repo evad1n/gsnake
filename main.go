@@ -3,12 +3,15 @@ package main
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 
 	speed := flag.Float64("speed", 1.0, "Base speed multiplier")
 	maxSize := flag.Int("size", 40, "Optional max board size")
