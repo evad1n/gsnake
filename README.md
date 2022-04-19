@@ -20,6 +20,7 @@ Download latest release from the [releases page](https://github.com/evad1n/gsnak
 -   `p` to pause
 -   `r` to reset
 -   `n` to go frame by frame while paused
+-   `esc` or `ctrl + c` to quit
 
 ### Flags
 
