@@ -50,9 +50,7 @@ func NewBoard(screen tcell.Screen, maxSize int) *Board {
 }
 
 func (b *Board) Draw(screen tcell.Screen) {
-	// TL debug
-	// screen.SetContent(b.x, b.y, 'O', nil, b.style.Background(tcell.ColorDarkOliveGreen))
-	// V
+	// Vertical walls
 	for row := b.y; row <= b.y+b.height; row++ {
 		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
 		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
@@ -88,7 +86,7 @@ func (p Point) Collides(other Point) bool {
 	return p.x == other.x && p.y == other.y
 }
 
-// -1 if no diff
+// -1 default return if points aren't one block away in cardinal directions
 func (p Point) DirTo(other Point) int {
 	y := p.y - other.y
 	x := p.x - other.x

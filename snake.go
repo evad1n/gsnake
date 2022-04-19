@@ -13,6 +13,9 @@ type (
 		// Otherwise you can turn 180 with multiple inputs per tick
 		pendingTurn int
 
+		// Decide which runes to draw, then transform
+		pendingDraw []rune
+
 		// Can potentially be digesting multiple things if we are real long
 		growPositions []Point
 	}
@@ -62,25 +65,27 @@ func (s *Snake) Grow(pos Point) {
 }
 
 func (s Snake) Draw(screen tcell.Screen) {
-	var prev *Cell
+	i := 0
 	for c := s.head; c != nil; c = c.next {
-		c.Draw(screen, prev, s.CellIsGrowthPosition(c))
-		prev = c
+		screen.SetContent(c.x, c.y, s.pendingDraw[i], nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
+		i++
 	}
+	s.pendingDraw = nil
 }
 
-func (s *Snake) CellIsGrowthPosition(c *Cell) bool {
-	for _, p := range s.growPositions {
-		if p.Equals(c.Point) {
-			return true
-		}
+func (s *Snake) UpdateDraw() {
+	s.pendingDraw = make([]rune, s.length)
+	var prev *Cell
+	i := 0
+	for c := s.head; c != nil; c = c.next {
+		c.PendingDraw(s.pendingDraw, i, prev, s.CellIsGrowthPosition(c))
+		prev = c
+		i++
 	}
-
-	return false
 }
 
 // Replace positions
-func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
+func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow bool) {
 	char := 'o'
 
 	switch {
@@ -124,31 +129,29 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 		case dirToPrev == Left && dirToNext == Up ||
 			dirToPrev == Up && dirToNext == Left:
 			char = '┘'
-			// char = '╝'
 		case dirToPrev == Right && dirToNext == Up ||
 			dirToPrev == Up && dirToNext == Right:
-			// char = '╚'
 			char = '└'
 		case dirToPrev == Left && dirToNext == Down ||
 			dirToPrev == Down && dirToNext == Left:
-			// char = '╗'
 			char = '┐'
 		case dirToPrev == Right && dirToNext == Down ||
 			dirToPrev == Down && dirToNext == Right:
-			// char = '╔'
 			char = '┌'
 		}
 	}
 
-	// ╔
-	// ╚
-	// ╗
-	// ╝
+	pendingDraw[index] = char
+}
 
-	// ‖
-	// ═
+func (s *Snake) CellIsGrowthPosition(c *Cell) bool {
+	for _, p := range s.growPositions {
+		if p.Equals(c.Point) {
+			return true
+		}
+	}
 
-	screen.SetContent(c.x, c.y, char, nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
+	return false
 }
 
 func (s *Snake) Turn(direction int) {

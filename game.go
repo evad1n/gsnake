@@ -30,12 +30,15 @@ type (
 	GameOpts struct {
 		SpeedMultiplier float64
 		MaxBoardSize    int
+		Wrap            bool
 	}
 )
 
 const baseSpeed float64 = 1.0
 
 func NewGame(screen tcell.Screen, opts GameOpts) *Game {
+	fmt.Printf("opts: %+v\n", opts)
+
 	// Create board and snake
 	b := NewBoard(screen, opts.MaxBoardSize)
 
@@ -90,6 +93,8 @@ func (g *Game) Event(ev *tcell.EventKey) {
 		}
 	case ev.Rune() == 'p':
 		g.TogglePause()
+	case ev.Rune() == 'n' && g.paused:
+		g.Tick()
 	case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
 		g.TurnSnakes(Up)
 	case ev.Key() == tcell.KeyRight || ev.Rune() == 'd':
@@ -101,22 +106,22 @@ func (g *Game) Event(ev *tcell.EventKey) {
 	}
 }
 
-func (g *Game) TurnSnakes(dir int) {
-	for _, s := range g.snakes {
-		s.Turn(dir)
-	}
-}
-
 func (g *Game) Update() {
 	for _, s := range g.snakes {
 		s.Move()
+		s.UpdateDraw()
 	}
 
 	// Wall collision
-	if g.CollidesWall() {
-		g.over = true
-		return
+	if g.opts.Wrap {
+		g.WrapSnakes()
+	} else {
+		if g.CollidesWall() {
+			g.over = true
+			return
+		}
 	}
+
 	// Self collision
 	for _, s := range g.snakes {
 		if s.CollideSelf() {
@@ -137,6 +142,26 @@ func (g *Game) Update() {
 	}
 }
 
+func (g *Game) Draw() {
+	for _, s := range g.snakes {
+		s.Draw(g.screen)
+	}
+	g.board.Draw(g.screen)
+
+	// Score
+	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
+
+	if g.over {
+		g.drawGameOverText()
+	}
+}
+
+func (g *Game) TurnSnakes(dir int) {
+	for _, s := range g.snakes {
+		s.Turn(dir)
+	}
+}
+
 func (g *Game) SnakesCollideWithPoint(p Point) bool {
 	for _, s := range g.snakes {
 		if s.Collides(p) {
@@ -151,20 +176,6 @@ func (g *Game) NewFruit() {
 	g.board.NewFruit()
 	for g.SnakesCollideWithPoint(g.board.fruit) {
 		g.board.NewFruit()
-	}
-}
-
-func (g *Game) Draw() {
-	for _, s := range g.snakes {
-		s.Draw(g.screen)
-	}
-	g.board.Draw(g.screen)
-
-	// Score
-	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
-
-	if g.over {
-		g.drawGameOverText()
 	}
 }
 
@@ -199,6 +210,23 @@ func (g *Game) CollidesWall() bool {
 	}
 
 	return false
+}
+
+func (g *Game) WrapSnakes() {
+	for _, s := range g.snakes {
+		p := s.head
+
+		switch {
+		case p.x < g.board.x:
+			s.head.x = g.board.x + g.board.width
+		case p.x >= g.board.x+g.board.width:
+			s.head.x = g.board.x
+		case p.y < g.board.y:
+			s.head.y = g.board.y + g.board.height
+		case p.y >= g.board.y+g.board.height:
+			s.head.y = g.board.y
+		}
+	}
 }
 
 const (
