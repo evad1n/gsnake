@@ -66,10 +66,6 @@ func main() {
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				quit()
-			} else if ev.Key() == tcell.KeyCtrlL {
-				s.Sync()
-			} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
-				s.Clear()
 			}
 			game.Event(ev)
 		}
