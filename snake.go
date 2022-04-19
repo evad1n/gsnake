@@ -86,10 +86,12 @@ func (s *Snake) UpdateDraw() {
 
 // Replace positions
 func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow bool) {
-	char := 'o'
+	// Something noticeable when it isn't working
+	char := 'W'
 
 	switch {
 	// Head
+	// Takes precedence over growth
 	case prev == nil:
 		switch {
 		case c.next.x < c.x:
@@ -101,6 +103,8 @@ func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow boo
 		case c.next.y > c.y:
 			char = '^'
 		}
+	case isGrow:
+		char = 'O'
 	// Tail
 	case c.next == nil:
 		switch {
@@ -113,8 +117,6 @@ func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow boo
 		case prev.y > c.y:
 			char = '|'
 		}
-	case isGrow:
-		char = 'O'
 	default:
 		dirToPrev := c.Point.DirTo(prev.Point)
 		dirToNext := c.Point.DirTo(c.next.Point)
@@ -138,6 +140,20 @@ func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow boo
 		case dirToPrev == Right && dirToNext == Down ||
 			dirToPrev == Down && dirToNext == Right:
 			char = '┌'
+		case dirToNext == -1:
+			switch {
+			case dirToPrev == Up || dirToPrev == Down:
+				char = '|'
+			case dirToPrev == Left || dirToPrev == Right:
+				char = '-'
+			}
+		case dirToPrev == -1:
+			switch {
+			case dirToNext == Up || dirToNext == Down:
+				char = '|'
+			case dirToNext == Left || dirToNext == Right:
+				char = '-'
+			}
 		}
 	}
 
@@ -168,8 +184,7 @@ func (s *Snake) Turn(direction int) {
 }
 
 func (s *Snake) Move() {
-	// Add pending growth
-	s.UpdateGrowth()
+	prevTailPos := s.Tail().Point
 
 	s.dir = s.pendingTurn
 	s.head.Move()
@@ -183,6 +198,9 @@ func (s *Snake) Move() {
 	case Left:
 		s.head.x--
 	}
+
+	// Add pending growth
+	s.UpdateGrowth(prevTailPos)
 }
 
 func (s *Snake) Tail() *Cell {
@@ -195,18 +213,18 @@ func (s *Snake) Tail() *Cell {
 	}
 }
 
-func (s *Snake) UpdateGrowth() {
-	tail := s.Tail()
-
+func (s *Snake) UpdateGrowth(prevTailPos Point) {
 	for i, p := range s.growPositions {
-		if tail.Equals(p) {
+		if prevTailPos.Equals(p) {
 			s.length++
-			tail.next = &Cell{
-				Point: p,
+
+			s.Tail().next = &Cell{
+				Point: prevTailPos,
 			}
 
 			// Remove from grow positions
 			s.growPositions = append(s.growPositions[:i], s.growPositions[i+1:]...)
+			return
 		}
 	}
 }

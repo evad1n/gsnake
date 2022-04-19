@@ -37,8 +37,6 @@ type (
 const baseSpeed float64 = 1.0
 
 func NewGame(screen tcell.Screen, opts GameOpts) *Game {
-	fmt.Printf("opts: %+v\n", opts)
-
 	// Create board and snake
 	b := NewBoard(screen, opts.MaxBoardSize)
 
@@ -218,11 +216,11 @@ func (g *Game) WrapSnakes() {
 
 		switch {
 		case p.x < g.board.x:
-			s.head.x = g.board.x + g.board.width
+			s.head.x = g.board.x + g.board.width - 1
 		case p.x >= g.board.x+g.board.width:
 			s.head.x = g.board.x
 		case p.y < g.board.y:
-			s.head.y = g.board.y + g.board.height
+			s.head.y = g.board.y + g.board.height - 1
 		case p.y >= g.board.y+g.board.height:
 			s.head.y = g.board.y
 		}
