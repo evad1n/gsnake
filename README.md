@@ -4,6 +4,12 @@ Snake in your terminal written in go
 
 ## Install
 
+### From releases
+
+Download latest release from the [releases page](https://github.com/evad1n/gsnake/releases).
+
+### From source
+
 `go install github.com/evad1n/gsnake@latest`
 
 ## Usage
