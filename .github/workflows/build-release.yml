@@ -28,4 +28,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-         files: $NAME-${{ github.ref_name }}.zip
+         files: ${{ env.NAME }}-${{ github.ref_name }}.zip
