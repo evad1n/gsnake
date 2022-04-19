@@ -34,11 +34,14 @@ type (
 	}
 )
 
-const baseSpeed float64 = 1.0
+const (
+	baseSpeed float64 = 1.0
+	padding   int     = 3
+)
 
 func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 	// Create board and snake
-	b := NewBoard(screen, opts.MaxBoardSize)
+	b := NewBoard(screen, padding, opts.MaxBoardSize)
 
 	// Calc speed based on board size
 	speed := baseSpeed * float64(b.width) / 20.0
@@ -60,7 +63,8 @@ func (g *Game) Start() {
 		if !g.over && !g.paused {
 			s := g.speed * g.opts.SpeedMultiplier
 			// Faster based on snake length
-			s *= 1.0 + (float64(g.snakes[0].length) / 100.0)
+			s *= 0.6 + (float64(g.snakes[0].length) / 100.0)
+			// This calculation is psychotic
 			s *= 100.0
 
 			s = 10000.0 / s
@@ -85,6 +89,7 @@ func (g *Game) Event(ev *tcell.EventKey) {
 	switch {
 	case ev.Rune() == 'r':
 		g.Restart()
+	// Space
 	case ev.Rune() == ' ':
 		if g.over {
 			g.Restart()
@@ -134,7 +139,6 @@ func (g *Game) Update() {
 			g.score++
 			s.Grow(g.board.fruit)
 
-			g.NewFruit()
 			break
 		}
 	}
@@ -147,7 +151,7 @@ func (g *Game) Draw() {
 	g.board.Draw(g.screen)
 
 	// Score
-	drawText(g.screen, 0, 0, 10, 0, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
+	drawText(g.screen, padding, padding-2, 10+padding, padding-1, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
 
 	if g.over {
 		g.drawGameOverText()

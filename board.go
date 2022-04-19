@@ -24,11 +24,10 @@ type (
 )
 
 const (
-	padding   int  = 2
 	fruitRune rune = 'X'
 )
 
-func NewBoard(screen tcell.Screen, maxSize int) *Board {
+func NewBoard(screen tcell.Screen, padding int, maxSize int) *Board {
 	w, h := screen.Size()
 
 	if h > maxSize {

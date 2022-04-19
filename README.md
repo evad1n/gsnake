@@ -13,7 +13,7 @@ Snake in your terminal written in go
 -   WASD or arrow keys for movement
 -   `p` to pause
 -   `r` to reset
--   `n` to go tick by tick while paused
+-   `n` to go frame by frame while paused
 
 ### Flags
 

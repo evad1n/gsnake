@@ -13,7 +13,7 @@ type (
 		// Otherwise you can turn 180 with multiple inputs per tick
 		pendingTurn int
 
-		// Decide which runes to draw, then transform
+		// Decide which runes to draw, then handle wrapping so we preserve direction
 		pendingDraw []rune
 
 		// Can potentially be digesting multiple things if we are real long
