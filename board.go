@@ -45,23 +45,23 @@ func NewBoard(screen tcell.Screen, maxSize int) *Board {
 		width:  idealWidth - padding*2,
 		height: h - padding*2,
 		Point:  Point{padding, padding},
-		style:  tcell.StyleDefault,
+		style:  tcell.StyleDefault.Background(tcell.ColorWhite),
 	}
 }
 
 func (b *Board) Draw(screen tcell.Screen) {
 	// Vertical walls
 	for row := b.y; row <= b.y+b.height; row++ {
-		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
-		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
+		screen.SetContent(b.x-1, row, ' ', nil, b.style)
+		screen.SetContent(b.x+b.width, row, ' ', nil, b.style)
 	}
 	// Top
 	for col := b.x - 1; col < b.x+b.width+1; col++ {
-		screen.SetContent(col, b.y-1, '_', nil, b.style)
+		screen.SetContent(col, b.y-1, ' ', nil, b.style)
 	}
 	// Bottom
 	for col := b.x; col < b.x+b.width; col++ {
-		screen.SetContent(col, b.y+b.height, '_', nil, b.style)
+		screen.SetContent(col, b.y+b.height, ' ', nil, b.style)
 	}
 
 	// Draw fruit
