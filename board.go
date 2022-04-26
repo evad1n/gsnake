@@ -24,11 +24,10 @@ type (
 )
 
 const (
-	padding   int  = 2
 	fruitRune rune = 'X'
 )
 
-func NewBoard(screen tcell.Screen, maxSize int) *Board {
+func NewBoard(screen tcell.Screen, padding int, maxSize int) *Board {
 	w, h := screen.Size()
 
 	if h > maxSize {
@@ -45,23 +44,23 @@ func NewBoard(screen tcell.Screen, maxSize int) *Board {
 		width:  idealWidth - padding*2,
 		height: h - padding*2,
 		Point:  Point{padding, padding},
-		style:  tcell.StyleDefault,
+		style:  tcell.StyleDefault.Background(tcell.ColorWhite),
 	}
 }
 
 func (b *Board) Draw(screen tcell.Screen) {
-	// Walls
+	// Vertical walls
 	for row := b.y; row <= b.y+b.height; row++ {
-		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
-		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
+		screen.SetContent(b.x-1, row, ' ', nil, b.style)
+		screen.SetContent(b.x+b.width, row, ' ', nil, b.style)
 	}
 	// Top
 	for col := b.x - 1; col < b.x+b.width+1; col++ {
-		screen.SetContent(col, b.y-1, '_', nil, b.style)
+		screen.SetContent(col, b.y-1, ' ', nil, b.style)
 	}
 	// Bottom
 	for col := b.x; col < b.x+b.width; col++ {
-		screen.SetContent(col, b.y+b.height, '_', nil, b.style)
+		screen.SetContent(col, b.y+b.height, ' ', nil, b.style)
 	}
 
 	// Draw fruit
@@ -87,7 +86,7 @@ func (p Point) Collides(other Point) bool {
 	return p.x == other.x && p.y == other.y
 }
 
-// -1 if no diff
+// -1 default return if points aren't one block away in cardinal directions
 func (p Point) DirTo(other Point) int {
 	y := p.y - other.y
 	x := p.x - other.x

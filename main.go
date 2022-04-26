@@ -3,15 +3,27 @@ package main
 import (
 	"flag"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-func main() {
+var (
+	speed   float64
+	maxSize int
+	wrap    bool
+)
 
-	speed := flag.Float64("speed", 1.0, "Base speed multiplier")
-	maxSize := flag.Int("size", 40, "Optional max board size")
+func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	flag.Float64Var(&speed, "speed", 1.0, "Base speed multiplier")
+	flag.Float64Var(&speed, "s", 1.0, "Base speed multiplier")
+	flag.IntVar(&maxSize, "size", 40, "Optional max board size")
+	flag.BoolVar(&wrap, "wrap", false, "Wrap around screen")
+	flag.BoolVar(&wrap, "w", false, "Wrap around screen")
 
 	flag.Parse()
 
@@ -34,8 +46,9 @@ func main() {
 	}
 
 	game := NewGame(s, GameOpts{
-		SpeedMultiplier: *speed,
-		MaxBoardSize:    *maxSize,
+		SpeedMultiplier: speed,
+		MaxBoardSize:    maxSize,
+		Wrap:            wrap,
 	})
 
 	go game.Start()
@@ -52,10 +65,6 @@ func main() {
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				quit()
-			} else if ev.Key() == tcell.KeyCtrlL {
-				s.Sync()
-			} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
-				s.Clear()
 			}
 			game.Event(ev)
 		}

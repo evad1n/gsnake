@@ -13,6 +13,9 @@ type (
 		// Otherwise you can turn 180 with multiple inputs per tick
 		pendingTurn int
 
+		// Decide which runes to draw, then handle wrapping so we preserve direction
+		pendingDraw []rune
+
 		// Can potentially be digesting multiple things if we are real long
 		growPositions []Point
 	}
@@ -63,29 +66,33 @@ func (s *Snake) Grow(pos Point) {
 }
 
 func (s Snake) Draw(screen tcell.Screen) {
-	var prev *Cell
+	i := 0
 	for c := s.head; c != nil; c = c.next {
-		c.Draw(screen, prev, s.CellIsGrowthPosition(c))
-		prev = c
+		screen.SetContent(c.x, c.y, s.pendingDraw[i], nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
+		i++
 	}
+	s.pendingDraw = nil
 }
 
-func (s *Snake) CellIsGrowthPosition(c *Cell) bool {
-	for _, p := range s.growPositions {
-		if p.Equals(c.Point) {
-			return true
-		}
+func (s *Snake) UpdateDraw() {
+	s.pendingDraw = make([]rune, s.length)
+	var prev *Cell
+	i := 0
+	for c := s.head; c != nil; c = c.next {
+		c.PendingDraw(s.pendingDraw, i, prev, s.CellIsGrowthPosition(c))
+		prev = c
+		i++
 	}
-
-	return false
 }
 
 // Replace positions
-func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
-	char := 'o'
+func (c *Cell) PendingDraw(pendingDraw []rune, index int, prev *Cell, isGrow bool) {
+	// Something noticeable when it isn't working
+	char := 'W'
 
 	switch {
 	// Head
+	// Takes precedence over growth
 	case prev == nil:
 		switch {
 		case c.next.x < c.x:
@@ -97,6 +104,8 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 		case c.next.y > c.y:
 			char = '^'
 		}
+	case isGrow:
+		char = 'O'
 	// Tail
 	case c.next == nil:
 		switch {
@@ -109,8 +118,6 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 		case prev.y > c.y:
 			char = '|'
 		}
-	case isGrow:
-		char = 'O'
 	default:
 		// Make corners look better
 		dirToPrev := c.Point.DirTo(prev.Point)
@@ -126,31 +133,43 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 		case dirToPrev == Left && dirToNext == Up ||
 			dirToPrev == Up && dirToNext == Left:
 			char = '┘'
-			// char = '╝'
 		case dirToPrev == Right && dirToNext == Up ||
 			dirToPrev == Up && dirToNext == Right:
-			// char = '╚'
 			char = '└'
 		case dirToPrev == Left && dirToNext == Down ||
 			dirToPrev == Down && dirToNext == Left:
-			// char = '╗'
 			char = '┐'
 		case dirToPrev == Right && dirToNext == Down ||
 			dirToPrev == Down && dirToNext == Right:
-			// char = '╔'
 			char = '┌'
+		case dirToNext == -1:
+			switch {
+			case dirToPrev == Up || dirToPrev == Down:
+				char = '|'
+			case dirToPrev == Left || dirToPrev == Right:
+				char = '-'
+			}
+		case dirToPrev == -1:
+			switch {
+			case dirToNext == Up || dirToNext == Down:
+				char = '|'
+			case dirToNext == Left || dirToNext == Right:
+				char = '-'
+			}
 		}
 	}
 
-	// ╔
-	// ╚
-	// ╗
-	// ╝
+	pendingDraw[index] = char
+}
 
-	// ‖
-	// ═
+func (s *Snake) CellIsGrowthPosition(c *Cell) bool {
+	for _, p := range s.growPositions {
+		if p.Equals(c.Point) {
+			return true
+		}
+	}
 
-	screen.SetContent(c.x, c.y, char, nil, tcell.StyleDefault.Foreground(tcell.ColorGreen))
+	return false
 }
 
 func (s *Snake) Turn(direction int) {
@@ -167,8 +186,7 @@ func (s *Snake) Turn(direction int) {
 }
 
 func (s *Snake) Move() {
-	// Add pending growth
-	s.UpdateGrowth()
+	prevTailPos := s.Tail().Point
 
 	s.dir = s.pendingTurn
 	s.head.Move()
@@ -182,6 +200,9 @@ func (s *Snake) Move() {
 	case Left:
 		s.head.x--
 	}
+
+	// Add pending growth
+	s.UpdateGrowth(prevTailPos)
 }
 
 // Replace positions and move up
@@ -202,18 +223,18 @@ func (s *Snake) Tail() *Cell {
 	}
 }
 
-func (s *Snake) UpdateGrowth() {
-	tail := s.Tail()
-
+func (s *Snake) UpdateGrowth(prevTailPos Point) {
 	for i, p := range s.growPositions {
-		if tail.Equals(p) {
+		if prevTailPos.Equals(p) {
 			s.length++
-			tail.next = &Cell{
-				Point: p,
+
+			s.Tail().next = &Cell{
+				Point: prevTailPos,
 			}
 
 			// Remove from grow positions
 			s.growPositions = append(s.growPositions[:i], s.growPositions[i+1:]...)
+			return
 		}
 	}
 }

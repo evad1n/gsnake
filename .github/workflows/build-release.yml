@@ -1,0 +1,31 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  NAME: gsnake
+    
+jobs:
+  build:
+    name: Build Release from tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.18"
+
+      - name: Build
+        run: |
+          go build -o $NAME
+          zip $NAME-${{ github.ref_name }}.zip $NAME
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+         files: ${{ env.NAME }}-${{ github.ref_name }}.zip
