@@ -28,7 +28,6 @@ func main() {
 	s.SetStyle(defStyle)
 	s.Clear()
 
-	// Event loop
 	quit := func() {
 		s.Fini()
 		os.Exit(0)
@@ -41,7 +40,7 @@ func main() {
 
 	go game.Start()
 
-	// Event listener
+	// Event loop
 	for {
 		// Poll event
 		ev := s.PollEvent()
@@ -59,22 +58,6 @@ func main() {
 				s.Clear()
 			}
 			game.Event(ev)
-		}
-	}
-}
-
-func drawText(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style, text string) {
-	row := y1
-	col := x1
-	for _, r := range []rune(text) {
-		s.SetContent(col, row, r, nil, style)
-		col++
-		if col >= x2 {
-			row++
-			col = x1
-		}
-		if row > y2 {
-			break
 		}
 	}
 }

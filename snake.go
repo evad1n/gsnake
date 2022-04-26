@@ -32,6 +32,7 @@ const (
 	startLength = 6
 )
 
+// Will create rest of snake down
 func NewSnake(start Point) *Snake {
 	s := &Snake{
 		length: startLength,
@@ -56,7 +57,7 @@ func NewSnake(start Point) *Snake {
 	return s
 }
 
-// Pending growth to make it look cooler
+// Pending growth to show fruit in snake
 func (s *Snake) Grow(pos Point) {
 	s.growPositions = append(s.growPositions, pos)
 }
@@ -111,6 +112,7 @@ func (c *Cell) Draw(screen tcell.Screen, prev *Cell, isGrow bool) {
 	case isGrow:
 		char = 'O'
 	default:
+		// Make corners look better
 		dirToPrev := c.Point.DirTo(prev.Point)
 		dirToNext := c.Point.DirTo(c.next.Point)
 
@@ -182,6 +184,14 @@ func (s *Snake) Move() {
 	}
 }
 
+// Replace positions and move up
+func (c *Cell) Move() {
+	if c.next != nil {
+		c.next.Move()
+		c.next.Point = c.Point
+	}
+}
+
 func (s *Snake) Tail() *Cell {
 	c := s.head
 	for {
@@ -205,14 +215,6 @@ func (s *Snake) UpdateGrowth() {
 			// Remove from grow positions
 			s.growPositions = append(s.growPositions[:i], s.growPositions[i+1:]...)
 		}
-	}
-}
-
-// Replace positions and move up
-func (c *Cell) Move() {
-	if c.next != nil {
-		c.next.Move()
-		c.next.Point = c.Point
 	}
 }
 

@@ -50,9 +50,7 @@ func NewBoard(screen tcell.Screen, maxSize int) *Board {
 }
 
 func (b *Board) Draw(screen tcell.Screen) {
-	// TL debug
-	// screen.SetContent(b.x, b.y, 'O', nil, b.style.Background(tcell.ColorDarkOliveGreen))
-	// V
+	// Walls
 	for row := b.y; row <= b.y+b.height; row++ {
 		screen.SetContent(b.x-1, row, tcell.RuneVLine, nil, b.style)
 		screen.SetContent(b.x+b.width, row, tcell.RuneVLine, nil, b.style)
@@ -84,6 +82,7 @@ func (b *Board) Midpoint() Point {
 	}
 }
 
+// Point methods
 func (p Point) Collides(other Point) bool {
 	return p.x == other.x && p.y == other.y
 }
