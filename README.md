@@ -35,3 +35,5 @@ Download latest release from the [releases page](https://github.com/evad1n/gsnak
 -wrap
     Wrap around screen
 ```
+
+<!-- wasd and arrows for double snake (any collision bad) -->

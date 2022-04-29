@@ -48,7 +48,7 @@ func NewBoard(screen tcell.Screen, padding int, maxSize int) *Board {
 	}
 }
 
-func (b *Board) Draw(screen tcell.Screen) {
+func (b *Board) Draw(screen tcell.Screen, showFruit bool) {
 	// Vertical walls
 	for row := b.y; row <= b.y+b.height; row++ {
 		screen.SetContent(b.x-1, row, ' ', nil, b.style)
@@ -63,8 +63,10 @@ func (b *Board) Draw(screen tcell.Screen) {
 		screen.SetContent(col, b.y+b.height, ' ', nil, b.style)
 	}
 
-	// Draw fruit
-	screen.SetContent(b.fruit.x, b.fruit.y, fruitRune, nil, tcell.StyleDefault.Foreground(tcell.ColorRed))
+	if showFruit {
+		// Draw fruit
+		screen.SetContent(b.fruit.x, b.fruit.y, fruitRune, nil, tcell.StyleDefault.Foreground(tcell.ColorRed))
+	}
 }
 
 func (b *Board) NewFruit() {

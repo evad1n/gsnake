@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -18,9 +17,10 @@ type (
 
 		speed float64
 
-		score  int
-		over   bool
-		paused bool
+		score   int
+		over    bool
+		paused  bool
+		started bool
 	}
 
 	GameEvent struct {
@@ -57,10 +57,12 @@ func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 }
 
 func (g *Game) Start() {
-	g.Restart()
+	g.screen.Clear()
+	g.Draw()
+	g.screen.Show()
 
 	for {
-		if !g.over && !g.paused {
+		if g.IsPlayingState() {
 			s := g.speed * g.opts.SpeedMultiplier
 			// Faster based on snake length
 			s *= 0.6 + (float64(g.snakes[0].length) / 100.0)
@@ -74,6 +76,10 @@ func (g *Game) Start() {
 			g.Tick()
 		}
 	}
+}
+
+func (g *Game) IsPlayingState() bool {
+	return g.started && !g.over && !g.paused
 }
 
 func (g *Game) Tick() {
@@ -91,7 +97,7 @@ func (g *Game) Event(ev *tcell.EventKey) {
 		g.Restart()
 	// Space
 	case ev.Rune() == ' ':
-		if g.over {
+		if g.over || !g.started {
 			g.Restart()
 		}
 	case ev.Rune() == 'p':
@@ -139,6 +145,7 @@ func (g *Game) Update() {
 			g.score++
 			s.Grow(g.board.fruit)
 
+			g.NewFruit()
 			break
 		}
 	}
@@ -148,14 +155,19 @@ func (g *Game) Draw() {
 	for _, s := range g.snakes {
 		s.Draw(g.screen)
 	}
-	g.board.Draw(g.screen)
 
-	// Score
-	drawText(g.screen, padding, padding-2, 10+padding, padding-1, tcell.StyleDefault, fmt.Sprintf("Score: %d", g.score))
+	g.board.Draw(g.screen, g.started)
+
+	if !g.started {
+		g.drawStartGameText()
+	}
+
+	g.drawScore()
 
 	if g.over {
 		g.drawGameOverText()
 	}
+
 }
 
 func (g *Game) TurnSnakes(dir int) {
@@ -188,6 +200,7 @@ func (g *Game) Restart() {
 	g.score = 0
 
 	g.NewFruit()
+	g.started = true
 	g.over = false
 }
 
@@ -229,33 +242,4 @@ func (g *Game) WrapSnakes() {
 			s.head.y = g.board.y
 		}
 	}
-}
-
-const (
-	gameOverLen     = len("GAME OVER")
-	gameOverOffsetY = 0
-	continueLen     = len("PRESS SPACE TO CONTINUE")
-	continueOffsetY = 5
-)
-
-func (g *Game) drawGameOverText() {
-	drawText(
-		g.screen,
-		g.board.width/2-gameOverLen/2,
-		g.board.height/2+gameOverOffsetY,
-		gameOverLen,
-		g.board.height/2+gameOverOffsetY+1,
-		tcell.StyleDefault,
-		"GAME OVER",
-	)
-
-	drawText(
-		g.screen,
-		g.board.width/2-continueLen/2,
-		g.board.height/2+continueOffsetY,
-		continueLen,
-		g.board.height/2+continueOffsetY+1,
-		tcell.StyleDefault,
-		"PRESS SPACE TO CONTINUE",
-	)
 }
