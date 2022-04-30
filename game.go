@@ -184,6 +184,10 @@ func (g *Game) Draw() {
 		g.drawStartGameText()
 	}
 
+	if g.paused {
+		g.drawPauseText()
+	}
+
 	g.drawScore()
 	g.drawHighScore()
 

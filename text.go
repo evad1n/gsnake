@@ -7,9 +7,8 @@ import (
 )
 
 const (
-	startGameText    = "PRESS SPACE TO BEGIN"
-	startGameLen     = len(startGameText)
-	startGameOffsetY = 0
+	startGameText = "PRESS SPACE TO BEGIN"
+	startGameLen  = len(startGameText)
 
 	gameOverText    = "GAME OVER"
 	gameOverLen     = len(gameOverText)
@@ -18,6 +17,9 @@ const (
 	continueText    = "PRESS SPACE TO CONTINUE"
 	continueLen     = len(continueText)
 	continueOffsetY = 5
+
+	pauseText = "PAUSED"
+	pauseLen  = len(pauseText)
 
 	scoreMaxWidth     = 10
 	highScoreMaxWidth = scoreMaxWidth + 5
@@ -75,9 +77,9 @@ func (g *Game) drawStartGameText() {
 		g.screen,
 		textConfig{
 			left:   g.board.width/2 - continueLen/2,
-			top:    g.board.height/2 + startGameOffsetY,
+			top:    g.board.height / 2,
 			width:  startGameLen,
-			height: g.board.height/2 + startGameOffsetY + 1,
+			height: g.board.height/2 + 1,
 			style:  tcell.StyleDefault,
 			text:   startGameText,
 		},
@@ -106,6 +108,20 @@ func (g *Game) drawGameOverText() {
 			height: g.board.height/2 + continueOffsetY + 1,
 			style:  tcell.StyleDefault,
 			text:   continueText,
+		},
+	)
+}
+
+func (g *Game) drawPauseText() {
+	drawText(
+		g.screen,
+		textConfig{
+			left:   g.board.width/2 - pauseLen/2,
+			top:    g.board.height / 2,
+			width:  pauseLen,
+			height: g.board.height/2 + 1,
+			style:  tcell.StyleDefault,
+			text:   pauseText,
 		},
 	)
 }
