@@ -6,6 +6,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -79,4 +81,54 @@ func main() {
 			game.Event(ev)
 		}
 	}
+}
+
+const highScoreFile = "highscore.txt"
+
+// Read from file
+func loadHighScore() int {
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		return 0
+	}
+
+	snakeDir := filepath.Join(cfgDir, "gsnake")
+
+	err = os.MkdirAll(snakeDir, 0777)
+	if err != nil {
+		return 0
+	}
+
+	fullPath := filepath.Join(snakeDir, highScoreFile)
+
+	raw, err := os.ReadFile(fullPath)
+	if err != nil {
+		return 0
+	}
+
+	highScore, err := strconv.Atoi(string(raw))
+	if err != nil {
+		return 0
+	}
+
+	return highScore
+}
+
+// Will silently fail; not handling errors anyway...
+func writeHighScore(score int) {
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		return
+	}
+
+	snakeDir := filepath.Join(cfgDir, "gsnake")
+
+	err = os.MkdirAll(snakeDir, 0777)
+	if err != nil {
+		return
+	}
+
+	fullPath := filepath.Join(snakeDir, highScoreFile)
+
+	os.WriteFile(fullPath, []byte(strconv.Itoa(score)), 0666)
 }

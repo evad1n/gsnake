@@ -17,7 +17,9 @@ type (
 
 		speed float64
 
-		score   int
+		score     int
+		highScore int
+
 		over    bool
 		paused  bool
 		started bool
@@ -48,10 +50,11 @@ func NewGame(screen tcell.Screen, opts GameOpts) *Game {
 	speed := baseSpeed * float64(b.width) / 20.0
 
 	g := &Game{
-		board:  b,
-		screen: screen,
-		opts:   opts,
-		speed:  speed,
+		board:     b,
+		screen:    screen,
+		opts:      opts,
+		speed:     speed,
+		highScore: loadHighScore(),
 	}
 
 	return g
@@ -159,6 +162,11 @@ func (g *Game) Update() {
 			g.score++
 			s.Grow(g.board.fruit)
 
+			if g.score > g.highScore {
+				g.highScore = g.score
+				writeHighScore(g.score)
+			}
+
 			g.NewFruit()
 			break
 		}
@@ -177,6 +185,7 @@ func (g *Game) Draw() {
 	}
 
 	g.drawScore()
+	g.drawHighScore()
 
 	if g.over {
 		g.drawGameOverText()

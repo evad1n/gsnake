@@ -18,6 +18,9 @@ const (
 	continueText    = "PRESS SPACE TO CONTINUE"
 	continueLen     = len(continueText)
 	continueOffsetY = 5
+
+	scoreMaxWidth     = 10
+	highScoreMaxWidth = scoreMaxWidth + 5
 )
 
 type textConfig struct {
@@ -49,10 +52,21 @@ func (g *Game) drawScore() {
 	drawText(g.screen, textConfig{
 		left:   padding - 1,
 		top:    padding - 2,
-		width:  10 + padding,
+		width:  scoreMaxWidth + padding,
 		height: padding - 1,
 		style:  tcell.StyleDefault,
 		text:   fmt.Sprintf("Score: %d", g.score),
+	})
+}
+
+func (g *Game) drawHighScore() {
+	drawText(g.screen, textConfig{
+		left:   scoreMaxWidth + padding - 1,
+		top:    padding - 2,
+		width:  highScoreMaxWidth + padding,
+		height: padding - 1,
+		style:  tcell.StyleDefault,
+		text:   fmt.Sprintf("High Score: %d", g.highScore),
 	})
 }
 
