@@ -54,7 +54,7 @@ func (g *Game) drawScore() {
 	drawText(g.screen, textConfig{
 		left:   padding - 1,
 		top:    padding - 2,
-		width:  scoreMaxWidth + padding,
+		width:  scoreMaxWidth,
 		height: padding - 1,
 		style:  tcell.StyleDefault,
 		text:   fmt.Sprintf("Score: %d", g.score),
@@ -63,9 +63,9 @@ func (g *Game) drawScore() {
 
 func (g *Game) drawHighScore() {
 	drawText(g.screen, textConfig{
-		left:   scoreMaxWidth + padding - 1,
+		left:   g.board.width + padding - highScoreMaxWidth,
 		top:    padding - 2,
-		width:  highScoreMaxWidth + padding,
+		width:  highScoreMaxWidth,
 		height: padding - 1,
 		style:  tcell.StyleDefault,
 		text:   fmt.Sprintf("High Score: %d", g.highScore),
