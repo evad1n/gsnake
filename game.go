@@ -294,6 +294,8 @@ func (g *Game) Restart() {
 	g.NewFruit()
 	g.started = true
 	g.over = false
+
+	g.Tick()
 }
 
 func (g *Game) Over() bool {
