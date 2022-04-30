@@ -106,7 +106,10 @@ func (g *Game) Event(ev *tcell.EventKey) {
 	case ev.Rune() == 'n' && g.paused:
 		g.Tick()
 	default:
-		g.TurnSnakes(ev)
+		// Let turns happen while paused for frame by frame
+		if g.started && !g.over {
+			g.TurnSnakes(ev)
+		}
 	}
 }
 
@@ -131,6 +134,22 @@ func (g *Game) Update() {
 		if s.CollideSelf() {
 			g.over = true
 			return
+		}
+	}
+
+	// Multi-snake collision
+	if g.opts.DoubleSnake {
+		for i := range g.snakes {
+			for j := range g.snakes {
+				if i == j {
+					continue
+				}
+				if g.snakes[i].Collides(g.snakes[j].head.Point) {
+					g.over = true
+					return
+				}
+
+			}
 		}
 	}
 

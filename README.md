@@ -16,15 +16,18 @@ Download latest release from the [releases page](https://github.com/evad1n/gsnak
 
 ### Controls
 
--   WASD or arrow keys for movement
+-   WASD or arrow keys for movement (In double mode (`-d`) WASD controls one snake and arrow keys the other)
 -   `p` to pause
 -   `r` to reset
 -   `n` to go frame by frame while paused
--   `esc` or `ctrl + c` to quit
+-   `esc`, `ctrl + c` or `q` to quit
 
 ### Flags
 
 ```
+-d    Play with 2 independent snakes on the same board
+-double
+    Play with 2 independent snakes on the same board
 -s float
     Base speed multiplier (default 1)
 -size int
