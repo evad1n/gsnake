@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -29,6 +30,11 @@ func main() {
 	flag.BoolVar(&doubleSnake, "double", false, "Play with 2 independent snakes on the same board")
 
 	flag.Parse()
+
+	if speed <= 0 {
+		fmt.Printf("That's a negative speed right there sir: %f\n", speed)
+		os.Exit(1)
+	}
 
 	defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 
