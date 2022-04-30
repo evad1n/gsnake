@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	speed   float64
-	maxSize int
-	wrap    bool
+	speed       float64
+	maxSize     int
+	wrap        bool
+	doubleSnake bool
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	flag.IntVar(&maxSize, "size", 40, "Optional max board size")
 	flag.BoolVar(&wrap, "wrap", false, "Wrap around screen")
 	flag.BoolVar(&wrap, "w", false, "Wrap around screen")
+	flag.BoolVar(&doubleSnake, "d", false, "Play with 2 independent snakes on the same board")
+	flag.BoolVar(&doubleSnake, "double", false, "Play with 2 independent snakes on the same board")
 
 	flag.Parse()
 
@@ -49,6 +52,7 @@ func main() {
 		SpeedMultiplier: speed,
 		MaxBoardSize:    maxSize,
 		Wrap:            wrap,
+		DoubleSnake:     doubleSnake,
 	})
 
 	go game.Start()

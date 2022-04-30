@@ -31,6 +31,7 @@ type (
 		SpeedMultiplier float64
 		MaxBoardSize    int
 		Wrap            bool
+		DoubleSnake     bool
 	}
 )
 
@@ -104,14 +105,8 @@ func (g *Game) Event(ev *tcell.EventKey) {
 		g.TogglePause()
 	case ev.Rune() == 'n' && g.paused:
 		g.Tick()
-	case ev.Key() == tcell.KeyUp || ev.Rune() == 'w':
-		g.TurnSnakes(Up)
-	case ev.Key() == tcell.KeyRight || ev.Rune() == 'd':
-		g.TurnSnakes(Right)
-	case ev.Key() == tcell.KeyDown || ev.Rune() == 's':
-		g.TurnSnakes(Down)
-	case ev.Key() == tcell.KeyLeft || ev.Rune() == 'a':
-		g.TurnSnakes(Left)
+	default:
+		g.TurnSnakes(ev)
 	}
 }
 
@@ -170,9 +165,72 @@ func (g *Game) Draw() {
 
 }
 
-func (g *Game) TurnSnakes(dir int) {
-	for _, s := range g.snakes {
-		s.Turn(dir)
+func (g *Game) TurnSnakes(ev *tcell.EventKey) {
+	switch {
+	case ev.Rune() == 'w':
+		if g.opts.DoubleSnake {
+			g.snakes[0].Turn(Up)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Up)
+			}
+		}
+	case ev.Rune() == 'd':
+		if g.opts.DoubleSnake {
+			g.snakes[0].Turn(Right)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Right)
+			}
+		}
+	case ev.Rune() == 's':
+		if g.opts.DoubleSnake {
+			g.snakes[0].Turn(Down)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Down)
+			}
+		}
+	case ev.Rune() == 'a':
+		if g.opts.DoubleSnake {
+			g.snakes[0].Turn(Left)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Left)
+			}
+		}
+	case ev.Key() == tcell.KeyUp:
+		if g.opts.DoubleSnake {
+			g.snakes[1].Turn(Up)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Up)
+			}
+		}
+	case ev.Key() == tcell.KeyRight:
+		if g.opts.DoubleSnake {
+			g.snakes[1].Turn(Right)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Right)
+			}
+		}
+	case ev.Key() == tcell.KeyDown:
+		if g.opts.DoubleSnake {
+			g.snakes[1].Turn(Down)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Down)
+			}
+		}
+	case ev.Key() == tcell.KeyLeft:
+		if g.opts.DoubleSnake {
+			g.snakes[1].Turn(Left)
+		} else {
+			for _, s := range g.snakes {
+				s.Turn(Left)
+			}
+		}
 	}
 }
 
@@ -194,9 +252,24 @@ func (g *Game) NewFruit() {
 }
 
 func (g *Game) Restart() {
-	g.snakes = []*Snake{
-		NewSnake(g.board.Midpoint()),
+	if g.opts.DoubleSnake {
+		mid := g.board.Midpoint()
+		g.snakes = []*Snake{
+			NewSnake(Point{
+				x: mid.x - 2,
+				y: mid.y,
+			}),
+			NewSnake(Point{
+				x: mid.x + 2,
+				y: mid.y,
+			}),
+		}
+	} else {
+		g.snakes = []*Snake{
+			NewSnake(g.board.Midpoint()),
+		}
 	}
+
 	g.score = 0
 
 	g.NewFruit()
