@@ -127,7 +127,7 @@ func (g *Game) Update() {
 		g.WrapSnakes()
 	} else {
 		if g.CollidesWall() {
-			g.over = true
+			g.End()
 			return
 		}
 	}
@@ -135,7 +135,7 @@ func (g *Game) Update() {
 	// Self collision
 	for _, s := range g.snakes {
 		if s.CollideSelf() {
-			g.over = true
+			g.End()
 			return
 		}
 	}
@@ -148,7 +148,7 @@ func (g *Game) Update() {
 					continue
 				}
 				if g.snakes[i].Collides(g.snakes[j].head.Point) {
-					g.over = true
+					g.End()
 					return
 				}
 
@@ -171,6 +171,11 @@ func (g *Game) Update() {
 			break
 		}
 	}
+}
+
+func (g *Game) End() {
+	g.over = true
+	g.paused = false
 }
 
 func (g *Game) Draw() {
@@ -309,6 +314,7 @@ func (g *Game) Restart() {
 	g.NewFruit()
 	g.started = true
 	g.over = false
+	g.paused = false
 
 	g.Tick()
 }
