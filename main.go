@@ -86,29 +86,30 @@ func main() {
 const highScoreFile = "highscore.txt"
 
 // Read from file
+// Will return -1 if can't load
 func loadHighScore() int {
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	snakeDir := filepath.Join(cfgDir, "gsnake")
 
 	err = os.MkdirAll(snakeDir, 0777)
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	fullPath := filepath.Join(snakeDir, highScoreFile)
 
 	raw, err := os.ReadFile(fullPath)
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	highScore, err := strconv.Atoi(string(raw))
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	return highScore

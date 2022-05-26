@@ -6,17 +6,15 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const (
+var (
 	startGameText = "PRESS SPACE TO BEGIN"
 	startGameLen  = len(startGameText)
 
-	gameOverText    = "GAME OVER"
-	gameOverLen     = len(gameOverText)
-	gameOverOffsetY = 0
+	gameOverText = "GAME OVER"
+	gameOverLen  = len(gameOverText)
 
-	continueText    = "PRESS SPACE TO CONTINUE"
-	continueLen     = len(continueText)
-	continueOffsetY = 5
+	continueText = "PRESS SPACE TO CONTINUE"
+	continueLen  = len(continueText)
 
 	pauseText = "PAUSED"
 	pauseLen  = len(pauseText)
@@ -37,14 +35,39 @@ type textConfig struct {
 func drawText(s tcell.Screen, cfg textConfig) {
 	row := cfg.top
 	col := cfg.left
+
+	maxCol := cfg.left + cfg.width
+	maxRow := cfg.top + cfg.height
+
 	for _, r := range []rune(cfg.text) {
 		s.SetContent(col, row, r, nil, cfg.style)
 		col++
-		if col >= cfg.left+cfg.width {
+		if col >= maxCol {
 			row++
 			col = cfg.left
 		}
-		if row > cfg.top+cfg.height {
+		if row > maxRow {
+			break
+		}
+	}
+}
+
+// Accounts for board padding
+func drawBoardText(s tcell.Screen, b *Board, cfg textConfig) {
+	row := cfg.top + b.padding
+	col := cfg.left + b.padding
+
+	maxCol := cfg.left + cfg.width + b.padding
+	maxRow := cfg.top + cfg.height + b.padding
+
+	for _, r := range []rune(cfg.text) {
+		s.SetContent(col, row, r, nil, cfg.style)
+		col++
+		if col >= maxCol {
+			row++
+			col = cfg.left
+		}
+		if row > maxRow {
 			break
 		}
 	}
@@ -63,7 +86,7 @@ func (g *Game) drawScore() {
 
 func (g *Game) drawHighScore() {
 	drawText(g.screen, textConfig{
-		left:   g.board.width + padding - highScoreMaxWidth,
+		left:   g.board.width + g.board.padding - highScoreMaxWidth,
 		top:    padding - 2,
 		width:  highScoreMaxWidth,
 		height: padding - 1,
@@ -73,13 +96,14 @@ func (g *Game) drawHighScore() {
 }
 
 func (g *Game) drawStartGameText() {
-	drawText(
+	drawBoardText(
 		g.screen,
+		g.board,
 		textConfig{
-			left:   g.board.width/2 - continueLen/2,
-			top:    g.board.height / 2,
+			left:   g.board.width/2 - startGameLen/2,
+			top:    int(float32(g.board.height/2) * 0.9),
 			width:  startGameLen,
-			height: g.board.height/2 + 1,
+			height: 2,
 			style:  tcell.StyleDefault,
 			text:   startGameText,
 		},
@@ -87,25 +111,27 @@ func (g *Game) drawStartGameText() {
 }
 
 func (g *Game) drawGameOverText() {
-	drawText(
+	drawBoardText(
 		g.screen,
+		g.board,
 		textConfig{
 			left:   g.board.width/2 - gameOverLen/2,
-			top:    g.board.height/2 + gameOverOffsetY,
+			top:    int(float32(g.board.height/2) * 0.8),
 			width:  gameOverLen,
-			height: g.board.height/2 + gameOverOffsetY + 1,
+			height: 2,
 			style:  tcell.StyleDefault,
 			text:   gameOverText,
 		},
 	)
 
-	drawText(
+	drawBoardText(
 		g.screen,
+		g.board,
 		textConfig{
 			left:   g.board.width/2 - continueLen/2,
-			top:    g.board.height/2 + continueOffsetY,
+			top:    int(float32(g.board.height/2)*0.8) + 2,
 			width:  continueLen,
-			height: g.board.height/2 + continueOffsetY + 1,
+			height: 2,
 			style:  tcell.StyleDefault,
 			text:   continueText,
 		},
@@ -113,13 +139,14 @@ func (g *Game) drawGameOverText() {
 }
 
 func (g *Game) drawPauseText() {
-	drawText(
+	drawBoardText(
 		g.screen,
+		g.board,
 		textConfig{
 			left:   g.board.width/2 - pauseLen/2,
-			top:    g.board.height / 2,
+			top:    int(float32(g.board.height/2) * 0.9),
 			width:  pauseLen,
-			height: g.board.height/2 + 1,
+			height: 1,
 			style:  tcell.StyleDefault,
 			text:   pauseText,
 		},

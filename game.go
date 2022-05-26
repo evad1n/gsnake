@@ -103,9 +103,9 @@ func (g *Game) Event(ev *tcell.EventKey) {
 	case ev.Rune() == ' ':
 		if g.over || !g.started {
 			g.Restart()
+		} else {
+			g.TogglePause()
 		}
-	case ev.Rune() == 'p':
-		g.TogglePause()
 	case ev.Rune() == 'n' && g.paused:
 		g.Tick()
 	default:
@@ -189,7 +189,9 @@ func (g *Game) Draw() {
 	}
 
 	g.drawScore()
-	g.drawHighScore()
+	if g.highScore != -1 {
+		g.drawHighScore()
+	}
 
 	if g.over {
 		g.drawGameOverText()

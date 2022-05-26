@@ -8,8 +8,9 @@ import (
 
 type (
 	Board struct {
-		width  int
-		height int
+		width   int
+		height  int
+		padding int
 		Point
 
 		style tcell.Style
@@ -41,10 +42,11 @@ func NewBoard(screen tcell.Screen, padding int, maxSize int) *Board {
 	}
 
 	return &Board{
-		width:  idealWidth - padding*2,
-		height: h - padding*2,
-		Point:  Point{padding, padding},
-		style:  tcell.StyleDefault.Background(tcell.ColorWhite),
+		width:   idealWidth - padding*2,
+		height:  h - padding*2,
+		padding: padding,
+		Point:   Point{padding, padding},
+		style:   tcell.StyleDefault.Background(tcell.ColorWhite),
 	}
 }
 
